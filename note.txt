@@ -1,0 +1,27 @@
+List of services:
+AWS workspace
+EC2 instances
+Elastic Blockstore
+Elastic IP
+Security Groups
+EKS
+Lambda
+RDS instances
+RDS subnet Groups
+RDS reserved instances
+VPC
+subnet
+S3
+Load balancers
+Elastic Container Registry
+Beanstalk
+Route53
+Cloudfront
+API GW
+Certificate manager
+IAM users
+IAM Groups
+NAT GW 
+S2S connections
+DMS
+Cloudwatch
