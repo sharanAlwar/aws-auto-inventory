@@ -2,7 +2,7 @@ import boto3
 from pymongo import MongoClient
 
 # MongoDB connection
-client = MongoClient("mongodb+srv://sharanalwarswamy:sharanalwarswamy@cluster0.tu1qjxp.mongodb.net/")
+client = MongoClient("")
 db = client["aws-inventory"]
 
 # Boto3 clients
