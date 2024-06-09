@@ -3,7 +3,7 @@ from pymongo import MongoClient
 
 # MongoDB connection
 client = MongoClient("")
-db = client["aws-inventory"]
+db = client[""]
 
 # Boto3 clients
 session = boto3.Session()
@@ -17,12 +17,14 @@ workspaces_client = session.client('workspaces')
 ecr_client = session.client('ecr')
 beanstalk_client = session.client('elasticbeanstalk')
 route53_client = session.client('route53')
-# cloudfront_client = session.client('cloudfront')
 apigw_client = session.client('apigateway')
 acm_client = session.client('acm')
 iam_client = session.client('iam')
 dms_client = session.client('dms')
 cloudwatch_client = session.client('cloudwatch')
+ecs_client = session.client('ecs')
+kms_client = session.client('kms')
+secretsmanager_client = session.client('secretsmanager')
 
 def upload_to_mongodb(collection_name, documents):
     collection = db[collection_name]
@@ -105,10 +107,6 @@ def get_route53_hosted_zones():
     response = route53_client.list_hosted_zones()
     return [{"Id": zone['Id'], "Name": zone['Name'], "CallerReference": zone['CallerReference'], "ResourceRecordSetCount": zone['ResourceRecordSetCount']} for zone in response['HostedZones']]
 
-# def get_cloudfront_distributions():
-#     response = cloudfront_client.list_distributions()
-#     return [{"Id": dist['Id'], "DomainName": dist['DomainName'], "Status": dist['Status'], "LastModifiedTime": dist['LastModifiedTime']} for dist in response['DistributionList']['Items']]
-
 def get_api_gateways():
     response = apigw_client.get_rest_apis()
     return [{"Id": api['id'], "Name": api['name'], "Description": api.get('description', 'N/A'), "CreatedDate": api['createdDate']} for api in response['items']]
@@ -141,6 +139,26 @@ def get_cloudwatch_alarms():
     response = cloudwatch_client.describe_alarms()
     return [{"AlarmName": alarm['AlarmName'], "StateValue": alarm['StateValue'], "MetricName": alarm['MetricName'], "Namespace": alarm['Namespace']} for alarm in response['MetricAlarms']]
 
+def get_ecs_clusters():
+    response = ecs_client.list_clusters()
+    clusters = []
+    for arn in response['clusterArns']:
+        cluster_info = ecs_client.describe_clusters(clusters=[arn])['clusters'][0]
+        clusters.append({"ClusterArn": cluster_info['clusterArn'], "ClusterName": cluster_info['clusterName'], "Status": cluster_info['status'], "RunningTasksCount": cluster_info['runningTasksCount'], "PendingTasksCount": cluster_info['pendingTasksCount']})
+    return clusters
+
+def get_kms_keys():
+    response = kms_client.list_keys()
+    keys = []
+    for key in response['Keys']:
+        key_info = kms_client.describe_key(KeyId=key['KeyId'])['KeyMetadata']
+        keys.append({"KeyId": key_info['KeyId'], "Arn": key_info['Arn'], "Description": key_info.get('Description', 'N/A'), "Enabled": key_info['Enabled']})
+    return keys
+
+def get_secrets():
+    response = secretsmanager_client.list_secrets()
+    return [{"Name": secret['Name'], "ARN": secret['ARN'], "Description": secret.get('Description', 'N/A'), "SecretType": secret['SecretType']} for secret in response['SecretList']]
+
 # Collecting and uploading data
 upload_to_mongodb('AWS_Workspaces', get_aws_workspace())
 upload_to_mongodb('EC2_Instances', get_ec2_instances())
@@ -159,7 +177,6 @@ upload_to_mongodb('Load_Balancers', get_load_balancers())
 upload_to_mongodb('ECR_Repositories', get_ecr_repositories())
 upload_to_mongodb('Beanstalk_Applications', get_beanstalk_applications())
 upload_to_mongodb('Route53_Hosted_Zones', get_route53_hosted_zones())
-# upload_to_mongodb('CloudFront_Distributions', get_cloudfront_distributions())
 upload_to_mongodb('API_Gateways', get_api_gateways())
 upload_to_mongodb('Certificates', get_certificates())
 upload_to_mongodb('IAM_Users', get_iam_users())
@@ -168,3 +185,6 @@ upload_to_mongodb('NAT_Gateways', get_nat_gateways())
 upload_to_mongodb('S2S_Connections', get_s2s_connections())
 upload_to_mongodb('DMS_Tasks', get_dms_tasks())
 upload_to_mongodb('CloudWatch_Alarms', get_cloudwatch_alarms())
+upload_to_mongodb('ECS_Clusters', get_ecs_clusters())
+upload_to_mongodb('KMS_Keys', get_kms_keys())
+upload_to_mongodb('Secrets', get_secrets())

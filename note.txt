@@ -25,3 +25,6 @@ NAT GW
 S2S connections
 DMS
 Cloudwatch
+ECS 
+KMS 
+Secrets Manager
