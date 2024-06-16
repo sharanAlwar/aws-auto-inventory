@@ -1,4 +1,4 @@
-import pymongo
+from pymongo import MongoClient
 import csv
 
 # Connect to the MongoDB database
