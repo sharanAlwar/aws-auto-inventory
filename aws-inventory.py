@@ -27,6 +27,7 @@ ecs_client = session.client('ecs')
 kms_client = session.client('kms')
 secretsmanager_client = session.client('secretsmanager')
 
+
 def upload_to_mongodb(collection_name, documents):
     collection = db[collection_name]
     if documents:
@@ -168,6 +169,8 @@ def get_secrets():
     response = secretsmanager_client.list_secrets()
     return [{"Name": secret['Name'], "ARN": secret['ARN'], "Description": secret.get('Description', 'N/A'), "SecretType": secret['SecretType'], "Region": region} for secret in response['SecretList']]
 
+print("Retriving from CLI and sending to MongoDB")
+
 # Collecting and uploading data
 upload_to_mongodb('AWS_Workspaces', get_aws_workspace())
 upload_to_mongodb('EC2_Instances', get_ec2_instances())
@@ -197,3 +200,5 @@ upload_to_mongodb('CloudWatch_Alarms', get_cloudwatch_alarms())
 upload_to_mongodb('ECS_Clusters', get_ecs_clusters())
 upload_to_mongodb('KMS_Keys', get_kms_keys())
 upload_to_mongodb('Secrets', get_secrets())
+del session
+print("sent to Mongo")
